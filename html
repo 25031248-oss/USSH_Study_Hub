@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USSH Study Hub - Kho Tài Liệu Học Tập</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ussh: {
+                            red: '#8B0000',
+                            gold: '#D4AF37',
+                            darkRed: '#660000',
+                            bg: '#F9FAFB'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-ussh-red text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('browse')">
+                <div class="bg-white text-ussh-red p-2 rounded-lg font-bold text-xl">USSH</div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Study Hub</h1>
+                    <p class="text-xs text-red-200">Kho tài liệu ĐH KHXH&NV</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="hidden md:flex space-x-1">
+                <button onclick="switchTab('browse')" id="nav-browse" class="px-4 py-2 rounded-md font-medium text-sm transition bg-ussh-darkRed text-white">
+                    <i class="fa-solid fa-book-open mr-1.5"></i>Kho tài liệu
+                </button>
+                <button onclick="switchTab('tips')" id="nav-tips" class="px-4 py-2 rounded-md font-medium text-sm hover:bg-ussh-darkRed transition text-red-100">
+                    <i class="fa-solid fa-lightbulb mr-1.5"></i>Lưu ý & Mẹo ôn thi
+                </button>
+                <button onclick="switchTab('contribute')" id="nav-contribute" class="px-4 py-2 rounded-md font-medium text-sm hover:bg-ussh-darkRed transition text-red-100">
+                    <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>Đóng góp
+                </button>
+                <button onclick="switchTab('admin')" id="nav-admin" class="px-4 py-2 rounded-md font-medium text-sm hover:bg-ussh-darkRed transition text-red-100">
+                    <i class="fa-solid fa-user-shield mr-1.5"></i>Quản trị (Admin)
+                </button>
+            </nav>
+
+            <!-- User Status & Tier Widget -->
+            <div class="flex items-center space-x-3">
+                <div class="text-right hidden sm:block">
+                    <div class="text-sm font-semibold" id="user-name">Nguyễn Văn A</div>
+                    <div class="text-xs flex items-center justify-end text-ussh-gold font-medium" id="user-tier-badge">
+                        <i class="fa-solid fa-award mr-1"></i><span id="user-tier-text">Thành viên Plus</span>
+                    </div>
+                </div>
+                <button onclick="toggleUserModal()" class="w-10 h-10 rounded-full bg-red-800 border-2 border-ussh-gold flex items-center justify-center font-bold text-white shadow">
+                    NV
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Banner Cơ chế Contribute-to-Get -->
+        <div class="bg-gradient-to-r from-red-900 to-ussh-red text-white p-5 rounded-xl shadow-lg mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="space-y-1">
+                <span class="bg-ussh-gold text-gray-900 text-xs font-bold px-2.5 py-0.5 rounded uppercase">Cơ chế Contribute-to-Get</span>
+                <h2 class="text-xl font-bold">Chia sẻ 5 tài liệu để mở khóa toàn bộ Đề thi & Sơ đồ tư duy!</h2>
+                <p class="text-xs text-red-100">Đã đóng góp: <span id="contrib-count" class="font-bold text-ussh-gold">3/5</span> tài liệu hợp lệ.</p>
+            </div>
+            <div class="w-full md:w-48 bg-red-950 rounded-full h-3 border border-red-700 overflow-hidden">
+                <div class="bg-ussh-gold h-full rounded-full" style="width: 60%"></div>
+            </div>
+            <button onclick="switchTab('contribute')" class="bg-ussh-gold text-gray-900 font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 transition whitespace-nowrap shadow">
+                Tải lên ngay
+            </button>
+        </div>
+
+        <!-- TAB 1: KHO TÀI LIỆU -->
+        <section id="tab-browse" class="space-y-6">
+            <!-- Search & Filters -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-4">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-gray-400"></i>
+                    <input type="text" id="search-input" onkeyup="filterDocuments()" placeholder="Tìm kiếm tên môn học, mã môn (PHI1001), từ khóa tài liệu..." class="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ussh-red focus:outline-none text-sm">
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <select id="filter-block" onchange="filterDocuments()" class="border border-gray-300 rounded-lg p-2 text-xs focus:ring-1 focus:ring-ussh-red">
+                        <option value="">-- Khối môn học --</option>
+                        <option value="daicuong">Các môn đại cương</option>
+                        <option value="coso">Cơ sở ngành</option>
+                        <option value="chuyennganh">Chuyên ngành</option>
+                    </select>
+
+                    <select id="filter-subject" onchange="filterDocuments()" class="border border-gray-300 rounded-lg p-2 text-xs focus:ring-1 focus:ring-ussh-red">
+                        <option value="">-- Tất cả môn học --</option>
+                        <option value="Triết học Mác - Lênin">Triết học Mác - Lênin</option>
+                        <option value="Tư tưởng Hồ Chí Minh">Tư tưởng Hồ Chí Minh</option>
+                        <option value="Lịch sử Đảng">Lịch sử Đảng</option>
+                        <option value="Văn hóa Việt Nam">Văn hóa VN bối cảnh số</option>
+                    </select>
+
+                    <select id="filter-type" onchange="filterDocuments()" class="border border-gray-300 rounded-lg p-2 text-xs focus:ring-1 focus:ring-ussh-red">
+                        <option value="">-- Loại tài liệu --</option>
+                        <option value="de-cuong">Đề cương ôn tập</option>
+                        <option value="giao-trinh">Giáo trình tham khảo</option>
+                        <option value="de-thi">Đề thi các năm</option>
+                        <option value="so-do">Sơ đồ tư duy</option>
+                    </select>
+
+                    <select id="filter-year" onchange="filterDocuments()" class="border border-gray-300 rounded-lg p-2 text-xs focus:ring-1 focus:ring-ussh-red">
+                        <option value="">-- Năm cập nhật --</option>
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+
+                    <select id="filter-badge" onchange="filterDocuments()" class="border border-gray-300 rounded-lg p-2 text-xs focus:ring-1 focus:ring-ussh-red">
+                        <option value="">-- Mức độ đánh giá --</option>
+                        <option value="verified">Đã kiểm duyệt</option>
+                        <option value="high">Được đánh giá cao</option>
+                        <option value="ref">Tham khảo thêm</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Documents Grid -->
+            <div id="doc-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Data will be populated by JS -->
+            </div>
+        </section>
+
+        <!-- TAB 2: MẸO ÔN THI & LƯU Ý -->
+        <section id="tab-tips" class="hidden space-y-4">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-lg font-bold text-ussh-red mb-4 flex items-center">
+                    <i class="fa-regular fa-lightbulb mr-2"></i>Kinh nghiệm & Mẹo ôn thi từ Khóa trước
+                </h3>
+                <div class="space-y-4" id="tips-container">
+                    <!-- Tips item -->
+                    <div class="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded">Môn: Triết học Mác - Lênin (PHI1001)</span>
+                            <span class="text-xs text-gray-500">Đóng góp bởi: K66 Báo chí</span>
+                        </div>
+                        <h4 class="font-bold text-gray-900 mb-1">Cấu trúc đề thi tự luận & Cách ăn điểm phần Liên hệ thực tiễn</h4>
+                        <p class="text-sm text-gray-700 leading-relaxed">Đề gồm 2 câu: Câu 1 lý thuyết (4đ), Câu 2 bài tập vận dụng/liên hệ thực tiễn (6đ). Khi làm câu liên hệ thực tiễn về Quy luật Từ những thay đổi về lượng dẫn đến những thay đổi về chất, bắt buộc phải nêu rõ ví dụ liên quan đến quá trình học tập của bản thân tại USSH.</p>
+                    </div>
+
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-bold bg-blue-200 text-blue-900 px-2 py-0.5 rounded">Môn: Lịch sử Đảng Cộng sản Việt Nam</span>
+                            <span class="text-xs text-gray-500">Đóng góp bởi: K65 Quốc tế học</span>
+                        </div>
+                        <h4 class="font-bold text-gray-900 mb-1">Trọng tâm mốc thời gian các Kỳ Đại hội Đảng</h4>
+                        <p class="text-sm text-gray-700 leading-relaxed">Tập trung nhớ các bước ngoặt từ Đại hội VI (1986) - Đổi mới. Đề trắc nghiệm hay gài bẫy ở hoàn cảnh lịch sử và bài học kinh nghiệm.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: ĐÓNG GÓP TÀI LIỆU -->
+        <section id="tab-contribute" class="hidden max-w-2xl mx-auto">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-lg font-bold text-ussh-red mb-1">Đóng góp tài liệu học tập</h3>
+                <p class="text-xs text-gray-500 mb-6">Tải lên tài liệu hữu ích để nhận ngay điểm tích lũy và nâng cấp tài khoản Thành viên Plus.</p>
+
+                <form id="upload-form" onsubmit="handleUpload(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Tên tài liệu *</label>
+                        <input type="text" required placeholder="Ví dụ: Đề cương chi tiết Triết học Mác - K67" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-1 focus:ring-ussh-red">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Môn học *</label>
+                            <select required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-1 focus:ring-ussh-red">
+                                <option value="Triết học Mác - Lênin">Triết học Mác - Lênin</option>
+                                <option value="Tư tưởng Hồ Chí Minh">Tư tưởng Hồ Chí Minh</option>
+                                <option value="Lịch sử Đảng">Lịch sử Đảng</option>
+                                <option value="Văn hóa Việt Nam">Văn hóa Việt Nam</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Loại tài liệu *</label>
+                            <select required class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-1 focus:ring-ussh-red">
+                                <option value="de-cuong">Đề cương ôn tập</option>
+                                <option value="giao-trinh">Giáo trình tham khảo</option>
+                                <option value="de-thi">Đề thi các năm</option>
+                                <option value="so-do">Sơ đồ tư duy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Giảng viên phụ trách</label>
+                            <input type="text" placeholder="Thầy/Cô..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-1 focus:ring-ussh-red">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Năm học / Cập nhật *</label>
+                            <input type="number" value="2026" min="2018" max="2026" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-1 focus:ring-ussh-red">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Chọn File tài liệu (PDF, DOCX, PNG) *</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 cursor-pointer">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-xs text-gray-600">Kéo thả file vào đây hoặc <span class="text-ussh-red font-semibold">chọn từ máy tính</span></p>
+                            <p class="text-[10px] text-gray-400 mt-1">Dung lượng tối đa: 25MB</p>
+                            <input type="file" required class="hidden" id="file-input" onchange="updateFileName(this)">
+                        </div>
+                        <p id="file-name" class="text-xs text-green-600 mt-1 font-medium hidden"></p>
+                    </div>
+
+                    <button type="submit" class="w-full bg-ussh-red text-white font-bold py-3 rounded-lg text-sm hover:bg-ussh-darkRed transition shadow">
+                        Gửi tài liệu phê duyệt
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- TAB 4: TRANG QUẢN TRỊ (ADMIN) -->
+        <section id="tab-admin" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-ussh-red">Duyệt tài liệu đóng góp</h3>
+                    <span class="text-xs bg-red-100 text-ussh-red px-2.5 py-1 rounded-full font-semibold">2 Yêu cầu chờ duyệt</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-gray-100 border-b border-gray-200 text-gray-700 uppercase">
+                                <th class="p-3">Tên tài liệu</th>
+                                <th class="p-3">Môn học</th>
+                                <th class="p-3">Người gửi</th>
+                                <th class="p-3">Năm</th>
+                                <th class="p-3">Gắn nhãn đánh giá</th>
+                                <th class="p-3 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200" id="admin-pending-list">
+                            <tr>
+                                <td class="p-3 font-semibold">Đề thi giữa kỳ Tư tưởng Hồ Chí Minh 2025</td>
+                                <td class="p-3">Tư tưởng Hồ Chí Minh</td>
+                                <td class="p-3">sv_670012@vnu.edu.vn</td>
+                                <td class="p-3">2025</td>
+                                <td class="p-3">
+                                    <select class="border rounded p-1 text-xs">
+                                        <option value="verified">Đã kiểm duyệt</option>
+                                        <option value="high">Được đánh giá cao</option>
+                                        <option value="ref">Tham khảo thêm</option>
+                                    </select>
+                                </td>
+                                <td class="p-3 text-right space-x-2">
+                                    <button onclick="approveDoc(this)" class="bg-green-600 text-white px-3 py-1 rounded font-bold hover:bg-green-700">Duyệt</button>
+                                    <button onclick="rejectDoc(this)" class="bg-red-600 text-white px-3 py-1 rounded font-bold hover:bg-red-700">TỪ chối</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Báo cáo tài liệu -->
+    <div id="report-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-base font-bold text-gray-900">Báo xấu / Đánh dấu tài liệu</h3>
+            <p class="text-xs text-gray-500">Gửi phản hồi cho Ban quản trị nếu tài liệu có vấn đề.</p>
+            <select id="report-reason" class="w-full border border-gray-300 rounded-lg p-2 text-xs">
+                <option value="old">Tài liệu đã cũ / Nội dung đã thay đổi</option>
+                <option value="incorrect">Sai môn học / Sai thông tin</option>
+                <option value="copyright">Vi phạm bản quyền</option>
+                <option value="broken">File hỏng / Không xem được</option>
+            </select>
+            <textarea placeholder="Mô tả chi tiết hơn (không bắt buộc)... text-xs" class="w-full border border-gray-300 rounded-lg p-2 text-xs h-20"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeReportModal()" class="px-4 py-2 border rounded-lg text-xs font-semibold text-gray-600">Hủy</button>
+                <button onclick="submitReport()" class="px-4 py-2 bg-ussh-red text-white rounded-lg text-xs font-semibold">Gửi báo cáo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Data & Logic -->
+    <script>
+        // Mock Data Tài Liệu
+        const sampleDocuments = [
+            {
+                id: 1,
+                title: 'Đề cương chi tiết Triết học Mác - Lênin 2026',
+                block: 'daicuong',
+                subject: 'Triết học Mác - Lênin',
+                code: 'PHI1001',
+                type: 'de-cuong',
+                typeName: 'Đề cương ôn tập',
+                year: 2026,
+                lecturer: 'TS. Nguyễn Văn B',
+                badge: 'verified',
+                badgeName: 'Đã kiểm duyệt',
+                tierRequired: 'MEMBER',
+                views: 1240,
+                downloads: 450
+            },
+            {
+                id: 2,
+                title: 'Sơ đồ tư duy các thời kỳ Lịch sử Đảng',
+                block: 'daicuong',
+                subject: 'Lịch sử Đảng',
+                code: 'HIS1002',
+                type: 'so-do',
+                typeName: 'Sơ đồ tư duy',
+                year: 2025,
+                lecturer: 'PGS.TS Trần Thị C',
+                badge: 'high',
+                badgeName: 'Được đánh giá cao',
+                tierRequired: 'MEMBER_PLUS', // Yêu cầu Plus
+                views: 890,
+                downloads: 310
+            },
+            {
+                id: 3,
+                title: 'Tổng hợp Đề thi Tư tưởng Hồ Chí Minh (2020 - 2025)',
+                block: 'daicuong',
+                subject: 'Tư tưởng Hồ Chí Minh',
+                code: 'POL1001',
+                type: 'de-thi',
+                typeName: 'Đề thi các năm',
+                year: 2025,
+                lecturer: 'Nhiều giảng viên',
+                badge: 'verified',
+                badgeName: 'Đã kiểm duyệt',
+                tierRequired: 'MEMBER_PLUS', // Yêu cầu Plus
+                views: 2100,
+                downloads: 980
+            },
+            {
+                id: 4,
+                title: 'Giáo trình Văn hóa Việt Nam trong bối cảnh số',
+                block: 'coso',
+                subject: 'Văn hóa Việt Nam',
+                code: 'CUL2001',
+                type: 'giao-trinh',
+                typeName: 'Giáo trình tham khảo',
+                year: 2024,
+                lecturer: 'Khoa Lịch sử',
+                badge: 'ref',
+                badgeName: 'Tham khảo thêm',
+                tierRequired: 'GUEST',
+                views: 540,
+                downloads: 120
+            }
+        ];
+
+        // Trạng thái user hiện tại (MEMBER_PLUS)
+        const currentUser = {
+            role: 'MEMBER_PLUS',
+            contribCount: 3
+        };
+
+        // Render danh sách tài liệu
+        function renderDocuments(docs) {
+            const grid = document.getElementById('doc-grid');
+            grid.innerHTML = '';
+
+            if (docs.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500 text-sm">Không tìm thấy tài liệu phù hợp.</div>`;
+                return;
+            }
+
+            docs.forEach(doc => {
+                let badgeColor = 'bg-green-100 text-green-800 border-green-300';
+                if (doc.badge === 'high') badgeColor = 'bg-amber-100 text-amber-800 border-amber-300';
+                if (doc.badge === 'ref') badgeColor = 'bg-gray-100 text-gray-800 border-gray-300';
+
+                const isLocked = (doc.tierRequired === 'MEMBER_PLUS' && currentUser.role !== 'MEMBER_PLUS');
+
+                const card = `
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition p-4 flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex justify-between items-start mb-2 gap-2">
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded border ${badgeColor}">
+                                    <i class="fa-solid fa-circle-check mr-1"></i>${doc.badgeName}
+                                </span>
+                                <span class="text-[10px] text-gray-400">Năm: ${doc.year}</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-gray-900 leading-snug line-clamp-2">${doc.title}</h4>
+                            <p class="text-xs text-ussh-red font-semibold mt-1">${doc.subject} (${doc.code})</p>
+                            <p class="text-[11px] text-gray-500 mt-0.5">GV: ${doc.lecturer || 'Chưa cập nhật'}</p>
+                        </div>
+
+                        <div class="pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                            <span class="bg-gray-100 px-2 py-0.5 rounded text-[10px] font-medium">${doc.typeName}</span>
+                            <div class="space-x-2 text-[11px]">
+                                <span><i class="fa-regular fa-eye mr-0.5"></i>${doc.views}</span>
+                                <span><i class="fa-solid fa-download mr-0.5"></i>${doc.downloads}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-2 pt-1">
+                            ${isLocked ? 
+                                `<button class="w-full bg-gray-200 text-gray-600 font-bold py-2 rounded-lg text-xs flex items-center justify-center cursor-not-allowed">
+                                    <i class="fa-solid fa-lock mr-1.5"></i>Khóa (Cần Member Plus)
+                                </button>` :
+                                `<button onclick="downloadDoc(${doc.id})" class="flex-grow bg-ussh-red text-white font-bold py-2 rounded-lg text-xs hover:bg-ussh-darkRed transition flex items-center justify-center">
+                                    <i class="fa-solid fa-download mr-1.5"></i>Tải xuống
+                                </button>`
+                            }
+                            <button onclick="openReportModal(${doc.id})" title="Báo lỗi / Báo xấu" class="p-2 border border-gray-200 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 text-xs">
+                                <i class="fa-solid fa-flag"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        // Lọc tài liệu
+        function filterDocuments() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const block = document.getElementById('filter-block').value;
+            const subject = document.getElementById('filter-subject').value;
+            const type = document.getElementById('filter-type').value;
+            const year = document.getElementById('filter-year').value;
+            const badge = document.getElementById('filter-badge').value;
+
+            const filtered = sampleDocuments.filter(doc => {
+                const matchSearch = doc.title.toLowerCase().includes(search) || doc.code.toLowerCase().includes(search) || doc.subject.toLowerCase().includes(search);
+                const matchBlock = !block || doc.block === block;
+                const matchSubject = !subject || doc.subject === subject;
+                const matchType = !type || doc.type === type;
+                const matchYear = !year || doc.year.toString() === year;
+                const matchBadge = !badge || doc.badge === badge;
+
+                return matchSearch && matchBlock && matchSubject && matchType && matchYear && matchBadge;
+            });
+
+            renderDocuments(filtered);
+        }
+
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            ['browse', 'tips', 'contribute', 'admin'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${t}`);
+                btn.classList.remove('bg-ussh-darkRed', 'text-white');
+                btn.classList.add('text-red-100');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            activeBtn.classList.add('bg-ussh-darkRed', 'text-white');
+        }
+
+        // Action Handlers
+        function downloadDoc(id) {
+            alert(`Đang tải tài liệu ID #${id}. Cảm ơn bạn đã sử dụng USSH Study Hub!`);
+        }
+
+        function handleUpload(e) {
+            e.preventDefault();
+            alert('Đóng góp tài liệu thành công! Tài liệu của bạn đã được chuyển đến Ban quản trị để duyệt.');
+            switchTab('browse');
+        }
+
+        function openReportModal(docId) {
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').classList.add('hidden');
+        }
+
+        function submitReport() {
+            alert('Cảm ơn bạn đã phản hồi! Ban quản trị sẽ rà soát lại tài liệu này.');
+            closeReportModal();
+        }
+
+        function approveDoc(btn) {
+            const row = btn.closest('tr');
+            row.remove();
+            alert('Đã duyệt tài liệu thành công!');
+        }
+
+        function rejectDoc(btn) {
+            const row = btn.closest('tr');
+            row.remove();
+            alert('Đã từ chối tài liệu.');
+        }
+
+        // Init
+        window.onload = () => {
+            renderDocuments(sampleDocuments);
+        };
+    </script>
+</body>
+</html>
